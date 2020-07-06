@@ -1,9 +1,11 @@
 package it.polito.tdp.newufosightings;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.newufosightings.model.Model;
+import it.polito.tdp.newufosightings.model.Peso;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -16,6 +18,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 	
 	private Model model;
+	private Integer anno;
 
     @FXML
     private ResourceBundle resources;
@@ -33,7 +36,7 @@ public class FXMLController {
     private Button btnSelezionaAnno;
 
     @FXML
-    private ComboBox<?> cmbBoxForma;
+    private ComboBox<String> cmbBoxForma;
 
     @FXML
     private Button btnCreaGrafo;
@@ -49,12 +52,42 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	txtResult.clear();
+    	String forma = this.cmbBoxForma.getValue();
+    	if(forma==null) {
+        	txtResult.appendText("Selezionare una forma!\n");
+        	return;
+    	}
+    	this.model.creaGrafo(anno,forma);
+    	txtResult.appendText("Hai scelto la forma: "+forma+"\n");
+    	txtResult.appendText("Grafo creato con successo!\n");
+    	txtResult.appendText("# vertici: " +this.model.nVertici()+"\n");
+    	txtResult.appendText("# Archi: " +this.model.nArchi()+"\n");
+    	List<Peso> elenco = this.model.stampaSommaPesi();
+    	txtResult.appendText("\nElenco stati con somma pesi:\n");
+    	for(Peso p : elenco) {
+    		txtResult.appendText(p.toString()+"\n");
+    	}
+    	this.cmbBoxForma.getItems().clear();
+    	this.btnCreaGrafo.setDisable(true);
     }
 
     @FXML
     void doSelezionaAnno(ActionEvent event) {
-
+    	txtResult.clear();
+    	String a = txtAnno.getText();
+    	try {
+    		anno = Integer.parseInt(a);
+    		if(anno<1910 || anno>2014) {
+    			txtResult.appendText("L'anno deve essere compreso tra 1910 e 2014.\n");
+    			return;
+    		}
+    		this.cmbBoxForma.getItems().addAll(this.model.getForme(anno));
+        	this.btnCreaGrafo.setDisable(false);
+    	}catch(NumberFormatException e) {
+    		txtResult.appendText("Inserire un numero intero compreso tra 1910 e 2014.\n");
+    		return;
+    	}
     }
 
     @FXML
@@ -77,5 +110,6 @@ public class FXMLController {
 
 	public void setModel(Model model) {
 		this.model = model;
+		this.btnCreaGrafo.setDisable(true);
 	}
 }
